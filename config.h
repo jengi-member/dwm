@@ -93,6 +93,7 @@ static Key keys[] = {
 	{ KeyPress, MODKEY|ControlMask,			    XK_u, 	   spawn,          SHCMD("dmenu_steam") },
 	{ KeyPress, MODKEY|ControlMask,			    XK_i, 	   spawn,          SHCMD("dmenu_wifi") },
 	{ KeyPress, MODKEY|ControlMask,			    XK_m, 	   spawn,          SHCMD("dmenu_screens") },
+	{ KeyPress, MODKEY|ControlMask,			    XK_l, 	   spawn,          SHCMD("choose_wallpaper") },
 	{ KeyPress, MODKEY|ShiftMask, 			    XK_j, 	   spawn,          SHCMD("st -e zsh") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_k, 	   spawn,          SHCMD("exec env START_LF=true st -e zsh && { eval \"$START_LF\"; unset START_LF; }") }, 
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_l, 	   spawn,          SHCMD("firefox") },

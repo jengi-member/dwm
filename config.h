@@ -1,5 +1,9 @@
 /* See LICENSE file for copyright and license details. */
 
+#define XF86AudioMute 0x1008ff12
+#define XF86AudioLowerVolume 0x1008ff11
+#define XF86AudioRaiseVolume 0x1008ff13
+
 // scratchpad
 static Client *scratchpad;
 
@@ -96,11 +100,14 @@ static Key keys[] = {
 	{ KeyPress, MODKEY,		            XK_Return, spawn,          SHCMD("scrot ~/Pictures/screenshots/%Y-%m-%d-%T.png") },
 	{ KeyPress, MODKEY|ALT, 				    XK_u, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5% \n pkill -RTMIN+1 dwmblocks") },
 	{ KeyPress, MODKEY|ALT, 				    XK_i, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5% \n pkill -RTMIN+1 dwmblocks") },
+	{ KeyPress, 0, 				    			XF86AudioLowerVolume, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5% \n pkill -RTMIN+1 dwmblocks") },
+	{ KeyPress, 0, 				    			XF86AudioRaiseVolume, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5% \n pkill -RTMIN+1 dwmblocks") },
 	{ KeyPress, MODKEY|ALT, 				    XK_o, 	   spawn,          SHCMD("xbacklight -dec 5") },
 	{ KeyPress, MODKEY|ALT, 				    XK_p, 	   spawn,          SHCMD("xbacklight -inc 5") },
 	{ KeyPress, MODKEY, 				        XK_e, 	   spawn,          SHCMD("power_menu") },
 	{ KeyPress, 0,							XK_Caps_Lock,	   spawn,  SHCMD("pkill -RTMIN+5 dwmblocks")},
 	{ KeyRelease, 0,							XK_Caps_Lock,	   spawn,  SHCMD("pkill -RTMIN+5 dwmblocks")},
+	{ KeyPress, 0,							XF86AudioMute,		spawn,	SHCMD("toggle_mute")},
 //	{ KeyPress, MODKEY,                       XK_b,      togglebar,      {0} },
 	{ KeyPress, MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ KeyPress, MODKEY,                       XK_k,      focusstack,     {.i = -1 } },

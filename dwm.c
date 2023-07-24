@@ -1475,11 +1475,11 @@ hidewin(Client *c) {
 	if (!c || HIDDEN(c))
 		return;
 
-	Window w = c->win;
-	static XWindowAttributes ra, ca;
+	//Window w = c->win;
+	//static XWindowAttributes ra, ca;
 
 	// more or less taken directly from blackbox's hide() function
-	XGrabServer(dpy);
+	/*XGrabServer(dpy);
 	XGetWindowAttributes(dpy, root, &ra);
 	XGetWindowAttributes(dpy, w, &ca);
 	// prevent UnmapNotify events
@@ -1489,7 +1489,9 @@ hidewin(Client *c) {
 	setclientstate(c, IconicState);
 	XSelectInput(dpy, root, ra.your_event_mask);
 	XSelectInput(dpy, w, ca.your_event_mask);
-	XUngrabServer(dpy);
+	XUngrabServer(dpy);*/
+	XMoveWindow(dpy, c->win, c->x, HEIGHT(c) * -2);
+	setclientstate(c, IconicState);
 }
 
 void
@@ -2411,7 +2413,8 @@ showwin(Client *c, int arr)
 	if (!c || !HIDDEN(c))
 		return;
 
-	XMapWindow(dpy, c->win);
+	//XMapWindow(dpy, c->win);
+	XMoveWindow(dpy, c->win, c->x, c->y);
 	setclientstate(c, NormalState);
 
 	if(arr)
@@ -2423,7 +2426,7 @@ showhide(Client *c)
 {
 	if (!c)
 		return;
-	if (ISVISIBLE(c)) {
+	if (ISVISIBLE(c) && !HIDDEN(c)) {
 		/* show clients top down */
 		
 		XMoveWindow(dpy, c->win, c->x, c->y);
@@ -2535,7 +2538,7 @@ tag(const Arg *arg)
 		}
 		selmon->sel->tags = arg->ui & TAGMASK;
 		checkstack(selmon);
-		focus(NULL);
+		//focus(NULL);
 		//arrange(selmon);
 	}
 }
@@ -3366,10 +3369,12 @@ tagnext(const Arg *arg) {
 		Arg a = {.ui = 1 << 0 };
 		tag(&a);
 		viewsimple(&a);
+		focus(NULL);
 	}else {
 		Arg a = {.ui = 1 << (selmon->pertag->curtag) };
 		tag(&a);
 		viewsimple(&a);
+		focus(NULL);
 	}
 	if(selmon->sel) {
 		if(inc && !selmon->sel->isfullscreen && !selmon->sel->isfloating) {

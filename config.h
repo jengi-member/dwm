@@ -151,10 +151,10 @@ static Key keys[] = {
 //	{ KeyPress, MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } }, 
 	{ KeyPress, MODKEY,                       XK_odiaeresis,  focusmon,  {.i = +1 } }, 
 	{ KeyPress, MODKEY|ALT,		            XK_odiaeresis,  tagmon,    {.i = +1 } }, 
-	{ KeyPress, MODKEY,						XK_d,	   viewnext,	   {0} },		
-	{ KeyPress, MODKEY,						XK_s,	   viewprev,	   {0} },		
-	{ KeyPress, MODKEY,						XK_v,	   tagnext,	       {0} },		
-	{ KeyPress, MODKEY,						XK_c,	   tagprev,	       {0} },
+	{ KeyPress, MODKEY,						XK_d,	   viewnext,	   {.i = +1} },		
+	{ KeyPress, MODKEY,						XK_s,	   viewnext,	   {.i = -1} },		
+	{ KeyPress, MODKEY,						XK_v,	   tagnext,	       {.i = +1} },		
+	{ KeyPress, MODKEY,						XK_c,	   tagnext,	       {.i = -1} },
 	{ KeyPress, MODKEY|ShiftMask,				XK_e,	   quit,	       {0} }, };
 /* button definitions */ /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */ static Button buttons[] = { 
 	/* click                event mask      button          function        argument */ 

@@ -271,9 +271,7 @@ static void updatewmhints(Client *c);
 static void view(const Arg *arg);
 static void viewsimple(const Arg *arg);
 static void viewnext(const Arg *arg);
-static void viewprev(const Arg *arg);
 static void tagnext(const Arg *arg);
-static void tagprev(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
@@ -3336,23 +3334,22 @@ swallowingclient(Window w)
 
 void
 viewnext(const Arg *arg) {
-	if( selmon->pertag->curtag == 9 ) {
-		Arg a = {.ui = 1 << 0 };
-		view(&a);
+	if(arg->i == 1) {
+		if( selmon->pertag->curtag == 9 ) {
+			Arg a = {.ui = 1 << 0 };
+			view(&a);
+		}else {
+			Arg a = {.ui = 1 << (selmon->pertag->curtag) };
+			view(&a);
+		}
 	}else {
-		Arg a = {.ui = 1 << (selmon->pertag->curtag) };
-		view(&a);
-	}
-}
-
-void
-viewprev(const Arg *arg) {
-	if( selmon->pertag->curtag-2 == -1 ) {
-		Arg a = {.ui = 1 << 8 };
-		view(&a);
-	}else {
-		Arg a = {.ui = 1 << (selmon->pertag->curtag-2) };
-		view(&a);
+		if( selmon->pertag->curtag-2 == -1 ) {
+			Arg a = {.ui = 1 << 8 };
+			view(&a);
+		}else {
+			Arg a = {.ui = 1 << (selmon->pertag->curtag-2) };
+			view(&a);
+		}
 	}
 }
 
@@ -3365,49 +3362,32 @@ tagnext(const Arg *arg) {
 	else
 		inc = 1;
 
-	if( selmon->pertag->curtag == 9 ) {
-		Arg a = {.ui = 1 << 0 };
-		tag(&a);
-		viewsimple(&a);
-		focus(NULL);
+	if(arg->i == -1) {
+		if( selmon->pertag->curtag-2 == -1 ) {
+			Arg a = {.ui = 1 << 8 };
+			tag(&a);
+			viewsimple(&a);
+			focus(NULL);
+		}else {
+			Arg a = {.ui = 1 << (selmon->pertag->curtag-2) };
+			tag(&a);
+			viewsimple(&a);
+			focus(NULL);
+		}
 	}else {
-		Arg a = {.ui = 1 << (selmon->pertag->curtag) };
-		tag(&a);
-		viewsimple(&a);
-		focus(NULL);
-	}
-	if(selmon->sel) {
-		if(inc && !selmon->sel->isfullscreen && !selmon->sel->isfloating) {
-			if(ismaster(selmon->sel)) {
-				Arg a = {.i = +1};
-				incnmaster(&a);
-				checkstack(selmon);
-			}
+		if( selmon->pertag->curtag == 9 ) {
+			Arg a = {.ui = 1 << 0 };
+			tag(&a);
+			viewsimple(&a);
+			focus(NULL);
+		}else {
+			Arg a = {.ui = 1 << (selmon->pertag->curtag) };
+			tag(&a);
+			viewsimple(&a);
+			focus(NULL);
 		}
 	}
-	if(stackamount(selmon) == 2)
-		selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag] = 1;
-	arrange(selmon);
-}
 
-void
-tagprev(const Arg *arg) {
-	int inc;
-
-	if(selmon->sel == scratchpad)
-		inc = 0;
-	else
-		inc = 1;
-
-	if( selmon->pertag->curtag-2 == -1 ) {
-		Arg a = {.ui = 1 << 8 };
-		tag(&a);
-		viewsimple(&a);
-	}else {
-		Arg a = {.ui = 1 << (selmon->pertag->curtag-2) };
-		tag(&a);
-		viewsimple(&a);
-	}
 	if(selmon->sel) {
 		if(inc && !selmon->sel->isfullscreen && !selmon->sel->isfloating) {
 			if(ismaster(selmon->sel)) {

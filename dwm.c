@@ -60,8 +60,10 @@
 #define HIDDEN(C)				((getstate(C->win) == IconicState))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
-#define WIDTH(X)                ((X)->w + 2 * (X)->bw)
-#define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
+#define WIDTHASSIGNED(X)        ((X)->w_assigned)
+#define HEIGHTASSIGNED(X)       ((X)->h_assigned)
+#define WIDTH(X)          		((X)->w)
+#define HEIGHT(X)         		((X)->h)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 
@@ -96,6 +98,7 @@ struct Client {
 	char name[256];
 	float mina, maxa;
 	float cfact;
+	int x_assigned, y_assigned, w_assigned, h_assigned;
 	int x, y, w, h;
 	int oldx, oldy, oldw, oldh;
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
@@ -1575,10 +1578,10 @@ manage(Window w, XWindowAttributes *wa)
 	c->win = w;
 	c->pid = winpid(w);
 	/* geometry */
-	c->x = c->oldx = wa->x;
-	c->y = c->oldy = wa->y;
-	c->w = c->oldw = wa->width;
-	c->h = c->oldh = wa->height;
+	c->x_assigned = c->x = c->oldx = wa->x;
+	c->y_assigned = c->y = c->oldy = wa->y;
+	c->w_assigned = c->w = c->oldw = wa->width;
+	c->h_assigned = c->h = c->oldh = wa->height;
 	c->oldbw = wa->border_width;
 	c->cfact = 1.0;
 
@@ -1823,6 +1826,11 @@ recttomon(int x, int y, int w, int h)
 void
 resize(Client *c, int x, int y, int w, int h, int interact)
 {
+	c->x_assigned = x;
+	c->y_assigned = y;
+	c->w_assigned = w;
+	c->h_assigned = h;
+
 	int tabbed = 0;
 
 	if(!c->isfloating) {
@@ -2564,7 +2572,7 @@ tagmon(const Arg *arg)
 void
 tile(Monitor *m)
 {
-	unsigned int i, n, h, r, g = 0, mw, my, ty;
+	unsigned int i, n, h, g = 0, mw, my, ty;
 	float mfacts = 0, sfacts = 0;
 	Client *c;
 
@@ -2619,32 +2627,31 @@ tile(Monitor *m)
 				else
 					resize(c, m->wx, m->wy + bh, mw, m->wh - bh, 0);
 			}else {
-				r = MIN(n, m->nmaster) - i;
 				//check if should be tiled horisontally or vertically
 				if(m->pertag->mastertile[m->pertag->curtag] == 1) {
 					showwin(c, 0);
 					if(m->pertag->stacks[m->pertag->curtag] == 1) {
-						h = (m->ww - my - 2*gappx * (r - 1)) * (c->cfact / mfacts);
-						resize(c, m->wx + my, m->wy, h /*- (2*c->bw)*/, mw, 0);
-						if (my + WIDTH(c) -2*c->bw + 2*gappx - gap < m->ww)
-							my += WIDTH(c) -2*c->bw + 2*gappx - gap;
+						h = (m->ww - my) * (c->cfact / mfacts);
+						resize(c, m->wx + my, m->wy, h, mw, 0);
+						if (my + WIDTHASSIGNED(c) < m->ww)
+							my += WIDTHASSIGNED(c);
 					}else {
-						h = (mw - my - 2*gappx * (r - 1)) * (c->cfact / mfacts);
-						resize(c, m->wx + my, m->wy, h /*- (2*c->bw)*/, m->wh, 0);
-						if (my + WIDTH(c) -2*c->bw + 2*gappx - gap < mw)
-							my += WIDTH(c) -2*c->bw + 2*gappx - gap;
+						h = (mw - my) * (c->cfact / mfacts);
+						resize(c, m->wx + my, m->wy, h, m->wh, 0);
+						if (my + WIDTHASSIGNED(c) < mw)
+							my += WIDTHASSIGNED(c);
 					}
 				} else {
 					if(m->pertag->stacks[m->pertag->curtag] == 1) {
-						h = (mw - my - 2*gappx * (r - 1)) * (c->cfact / mfacts);
-						resize(c, m->wx, m->wy + my, m->ww /*- (2*c->bw)*/, h /*- (2*c->bw)*/, 0);
-						if (my + HEIGHT(c) -2*c->bw + 2*gappx - gap < mw)
-							my += HEIGHT(c) -2*c->bw + 2*gappx - gap;
+						h = (mw - my) * (c->cfact / mfacts);
+						resize(c, m->wx, m->wy + my, m->ww, h, 0);
+						if (my + HEIGHTASSIGNED(c) < mw)
+							my += HEIGHTASSIGNED(c);
 					}else {
-						h = (m->wh - my - 2*gappx * (r - 1)) * (c->cfact / mfacts);
-						resize(c, m->wx, m->wy + my, mw /*- (2*c->bw)*/, h /*- (2*c->bw)*/, 0);
-						if (my + HEIGHT(c) -2*c->bw + 2*gappx - gap < m->wh)
-							my += HEIGHT(c) -2*c->bw + 2*gappx - gap;
+						h = (m->wh - my) * (c->cfact / mfacts);
+						resize(c, m->wx, m->wy + my, mw, h, 0);
+						if (my + HEIGHTASSIGNED(c) < m->wh)
+							my += HEIGHTASSIGNED(c);
 					}
 				}
 				mfacts -= c->cfact;
@@ -2657,31 +2664,30 @@ tile(Monitor *m)
 				else
 					resize(c, m->wx +mw_, m->wy +bh, m->ww -mw_, m->wh -bh, 0);
 			}else {
-				r = n - i;
 				// check if should be tiled horisontally or vertically
 				if(m->pertag->stacktile[m->pertag->curtag] == 1) {
 					if(m->pertag->stacks[m->pertag->curtag] == 1) {
-						h = (m->ww -ty - 2*gappx * (r - 1)) * (c->cfact / sfacts);
-						resize(c, m->wx +g +ty, m->wy +mw_, h -g /*-(2*c->bw)*/, m->wh -mw_ /*- (2*c->bw)*/, False);
-						if (ty + WIDTH(c) -2*c->bw + 2*gappx - gap< m->ww)
-							ty += WIDTH(c) -2*c->bw + 2*gappx - gap;
+						h = (m->ww -ty) * (c->cfact / sfacts);
+						resize(c, m->wx +g +ty, m->wy +mw_, h -g, m->wh -mw_, False);
+						if (ty + WIDTHASSIGNED(c) < m->ww)
+							ty += WIDTHASSIGNED(c);
 					} else {
-						h = (m->ww -mw_ -ty - 2*gappx * (r - 1)) * (c->cfact / sfacts);
-						resize(c, m->wx +mw_ +g +ty, m->wy, h -g /*-(2*c->bw)*/, m->wh /*- (2*c->bw)*/, False);
-						if (ty + WIDTH(c) -2*c->bw + 2*gappx - gap< m->ww - mw_)
-							ty += WIDTH(c) -2*c->bw + 2*gappx - gap;
+						h = (m->ww -mw_ -ty) * (c->cfact / sfacts);
+						resize(c, m->wx +mw_ +g +ty, m->wy, h -g, m->wh, False);
+						if (ty + WIDTHASSIGNED(c) < m->ww - mw_)
+							ty += WIDTHASSIGNED(c);
 					}
 				} else {
 					if(m->pertag->stacks[m->pertag->curtag] == 1) {
-						h = (m->wh -mw_ - ty - 2*gappx * (n - i - 1)) * (c->cfact / sfacts);
-						resize(c, m->wx + g, m->wy +mw_ + ty, m->ww - g /*- (2*c->bw)*/, h /*- (2*c->bw)*/, False);
-						if (ty + HEIGHT(c) -2*c->bw + 2*gappx - gap< m->wh - mw_)
-							ty += HEIGHT(c) -2*c->bw + 2*gappx - gap;
+						h = (m->wh -mw_ - ty) * (c->cfact / sfacts);
+						resize(c, m->wx + g, m->wy +mw_ + ty, m->ww - g, h, False);
+						if (ty + HEIGHTASSIGNED(c) < m->wh - mw_)
+							ty += HEIGHTASSIGNED(c);
 					}else {
-						h = (m->wh - ty - 2*gappx * (n - i - 1)) * (c->cfact / sfacts);
-						resize(c, m->wx + mw + g, m->wy + ty, m->ww - mw - g /*- (2*c->bw)*/, h /*- (2*c->bw)*/, False);
-						if (ty + HEIGHT(c) -2*c->bw + 2*gappx - gap< m->wh)
-							ty += HEIGHT(c) -2*c->bw + 2*gappx - gap;
+						h = (m->wh - ty) * (c->cfact / sfacts);
+						resize(c, m->wx + mw + g, m->wy + ty, m->ww - mw - g, h, False);
+						if (ty + HEIGHTASSIGNED(c) < m->wh)
+							ty += HEIGHTASSIGNED(c);
 					}
 				}
 				sfacts -= c->cfact;
@@ -2727,7 +2733,7 @@ togglefloating(const Arg *arg)
 	}
 	
 	if (selmon->sel->isfloating)
-		resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, selmon->sel->h, 0);
+		resize(selmon->sel, selmon->sel->x_assigned, selmon->sel->y_assigned, selmon->sel->w, selmon->sel->h, 0);
 	arrange(selmon);
 }
 
@@ -3367,26 +3373,23 @@ tagnext(const Arg *arg) {
 			Arg a = {.ui = 1 << 8 };
 			tag(&a);
 			viewsimple(&a);
-			focus(NULL);
 		}else {
 			Arg a = {.ui = 1 << (selmon->pertag->curtag-2) };
 			tag(&a);
 			viewsimple(&a);
-			focus(NULL);
 		}
 	}else {
 		if( selmon->pertag->curtag == 9 ) {
 			Arg a = {.ui = 1 << 0 };
 			tag(&a);
 			viewsimple(&a);
-			focus(NULL);
 		}else {
 			Arg a = {.ui = 1 << (selmon->pertag->curtag) };
 			tag(&a);
 			viewsimple(&a);
-			focus(NULL);
 		}
 	}
+	focus(NULL);
 
 	if(selmon->sel) {
 		if(inc && !selmon->sel->isfullscreen && !selmon->sel->isfloating) {

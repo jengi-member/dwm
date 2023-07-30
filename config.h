@@ -45,7 +45,7 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	//{ "Gimp",    NULL,     NULL,           0,         1,          0,           0,        -1 },
 	//{ "Firefox", NULL,     NULL,           1 << 8,    0,          0,          -1,        -1 },
-	{ "st-256color", NULL, NULL,		   0,		  0,		  1,		   0,		 -1 },
+	{ "Alacritty", NULL, NULL,		   0,		  0,		  1,		   0,		 -1 },
 	{ "floating", NULL, NULL,			0,			1,			0,			0,			-1 },
 	//{ "URxvt", NULL, NULL,		   0,		  0,		  1,		   0		 -1 },
 	//{ "Termite", NULL,     NULL,           0,         0,          1,           0,        -1 },
@@ -82,7 +82,7 @@ static const char *dmenucmd[] = { "dmenu_run -i", NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
 
 static const char scratchpadname[] = "scratchpad";
-static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34", "-e", "zsh", NULL };
+static const char *scratchpadcmd[] = { "alacritty", "-t", scratchpadname, NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -94,8 +94,8 @@ static Key keys[] = {
 	{ KeyPress, MODKEY|ControlMask,			    XK_i, 	   spawn,          SHCMD("dmenu_wifi") },
 	{ KeyPress, MODKEY|ControlMask,			    XK_m, 	   spawn,          SHCMD("dmenu_screens") },
 	{ KeyPress, MODKEY|ControlMask,			    XK_l, 	   spawn,          SHCMD("choose_wallpaper") },
-	{ KeyPress, MODKEY|ShiftMask, 			    XK_j, 	   spawn,          SHCMD("st -e zsh") },
-	{ KeyPress, MODKEY|ShiftMask, 		        XK_k, 	   spawn,          SHCMD("exec env START_LF=true st -e zsh && { eval \"$START_LF\"; unset START_LF; }") }, 
+	{ KeyPress, MODKEY|ShiftMask, 			    XK_j, 	   spawn,          SHCMD("alacritty") },
+	{ KeyPress, MODKEY|ShiftMask, 		        XK_k, 	   spawn,          SHCMD("terminal_lf") }, 
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_l, 	   spawn,          SHCMD("firefox") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_odiaeresis, spawn,          SHCMD("Discord") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_u, spawn,          SHCMD("steam") },

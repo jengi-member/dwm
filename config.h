@@ -7,9 +7,6 @@
 #define XF86AudioRaiseVolume 0x1008ff13
 #define XF86Display 0x1008ff59
 
-// scratchpad
-static Client *scratchpad;
-
 /* appearance */
 static const unsigned int borderpx  = 0;        /* border pixel of windows */
 static const unsigned int gappx     = 10;		/* gap pixel between windows*/
@@ -33,9 +30,6 @@ static const char *colors[][3]      = {
 	[SchemeBlue] = { col_cyan, col_cyan, col_cyan },
 	[SchemeGray] = { col_gray1, col_gray1, col_gray1 },
 };
-
-/* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -81,9 +75,6 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run -i", NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
 
-static const char scratchpadname[] = "scratchpad";
-static const char *scratchpadcmd[] = { "alacritty", "-t", scratchpadname, NULL };
-
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ KeyPress, MODKEY,			    XK_Delete, 	   spawn,          SHCMD("setxkbmap fi") },
@@ -99,7 +90,6 @@ static Key keys[] = {
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_l, 	   spawn,          SHCMD("firefox") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_odiaeresis, spawn,          SHCMD("Discord") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_u, spawn,          SHCMD("steam") },
-	{ KeyPress, MODKEY,							XK_y,	togglescratch,	{.v = scratchpadcmd } },
 	{ KeyPress, MODKEY|ALT, 				        XK_Return, spawn,          SHCMD("flameshot gui") },
 	{ KeyPress, MODKEY,		            XK_Return, spawn,          SHCMD("scrot ~/Pictures/screenshots/%Y-%m-%d-%T.png") },
 	{ KeyPress, MODKEY|ALT, 				    XK_u, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5% \n pkill -RTMIN+1 dwmblocks") },
@@ -107,7 +97,6 @@ static Key keys[] = {
 	{ KeyPress, 0, 				    			XF86AudioLowerVolume, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ -5% \n pkill -RTMIN+1 dwmblocks") },
 	{ KeyPress, 0, 				    			XF86AudioRaiseVolume, 	   spawn,          SHCMD("pactl set-sink-volume @DEFAULT_SINK@ +5% \n pkill -RTMIN+1 dwmblocks") },
 	{ KeyPress, MODKEY|ALT, 				    XK_o, 	   spawn,          SHCMD("toggle_mute") },
-//	{ KeyPress, MODKEY|ALT, 				    XK_p, 	   spawn,          SHCMD("xbacklight -inc 5") },
 	{ KeyPress, 0,								XF86MonBrightnessUp, spawn,		SHCMD("pkill -RTMIN+6 dwmblocks")},
 	{ KeyPress, 0,								XF86MonBrightnessDown, spawn,		SHCMD("pkill -RTMIN+6 dwmblocks")},
 	{ KeyRelease, 0,								XF86MonBrightnessUp, spawn,		SHCMD("pkill -RTMIN+6 dwmblocks")},
@@ -117,11 +106,12 @@ static Key keys[] = {
 	{ KeyPress, 0,							XK_Caps_Lock,	   spawn,  SHCMD("pkill -RTMIN+5 dwmblocks")},
 	{ KeyRelease, 0,							XK_Caps_Lock,	   spawn,  SHCMD("pkill -RTMIN+5 dwmblocks")},
 	{ KeyPress, 0,							XF86AudioMute,		spawn,	SHCMD("toggle_mute")},
-//	{ KeyPress, MODKEY,                       XK_b,      togglebar,      {0} },
 	{ KeyPress, MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ KeyPress, MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ KeyPress, MODKEY,						XK_n,	   focussel,	   {0} },
-	//{ MODKEY|ALT,					XK_n,	   movesel,		   {0} },
+	{ KeyPress, MODKEY|ALT,					XK_n,	   movesel,		   {0} },
+	{ KeyPress, MODKEY,						XK_y,		togglescratch,		{.v = termcmd} },
+	{ KeyPress, MODKEY|ALT,						XK_y,		togglescratchwindow,		{0} },
 	{ KeyPress, MODKEY|ALT,  		            XK_j,      movestack,      {.i = +1 } },
 	{ KeyPress, MODKEY|ALT,		            XK_k,      movestack,      {.i = -1 } },
 	{ KeyPress, MODKEY|ALT,                   XK_h,      incnmasterfocus,     {.i = +1} },
@@ -132,35 +122,23 @@ static Key keys[] = {
 	{ KeyPress, MODKEY,             			XK_p,      setcfact,       {.f =  0.00} },
 	{ KeyPress, MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ KeyPress, MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-//	{ KeyPress, MODKEY,						XK_q,	   test,		   {0} },
-//	{ KeyPress, MODKEY,						XK_w,	   restorewin,	   {0} },
 	{ KeyPress, MODKEY,						XK_comma,	   toggletile,     {0} },
 	{ KeyPress, MODKEY,						XK_period,	   togglestacktile, {0}},
-//	{ KeyPress, MODKEY,                       XK_Return, zoom,           {0} },
-//	{ KeyPress, MODKEY,                       XK_Tab,    view,           {0} },
 	{ KeyPress, MODKEY,      			        XK_r,      killclient,     {0} }, 
-//	{ KeyPress, MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} }, 
-//	{ KeyPress, MODKEY,                       XK_r,      setlayout,      {.v = &layouts[1]} }, 
-//	{ KeyPress, MODKEY,                       XK_BackSpace,      setlayout,      {.v = &layouts[2]} }, 
 	{ KeyPress, MODKEY,                       XK_m,      toggletab,      {0} }, 
 	{ KeyPress, MODKEY,                       XK_space,  togglefullscr,  {0} }, 
-//	{ KeyPress, MODKEY,						XK_BackSpace,  test,	   {0} },
-//	{ KeyPress, MODKEY,                       XK_space,  setlayout,      {0} }, 
-//	{ KeyPress, MODKEY|ShiftMask,             XK_space,  togglefloating, {0} }, 
-//	{ KeyPress, MODKEY,                       XK_0,      view,           {.ui = ~0 } }, 
-//	{ KeyPress, MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } }, 
 	{ KeyPress, MODKEY,                       XK_odiaeresis,  focusmon,  {.i = +1 } }, 
 	{ KeyPress, MODKEY|ALT,		            XK_odiaeresis,  tagmon,    {.i = +1 } }, 
 	{ KeyPress, MODKEY,						XK_d,	   viewnext,	   {.i = +1} },		
 	{ KeyPress, MODKEY,						XK_s,	   viewnext,	   {.i = -1} },		
+	//{ KeyPress, MODKEY|ALT,						XK_d,	   movetag,	   {.i = +1} },		
+	//{ KeyPress, MODKEY|ALT,						XK_s,	   movetag,	   {.i = -1} },		
 	{ KeyPress, MODKEY,						XK_v,	   tagnext,	       {.i = +1} },		
 	{ KeyPress, MODKEY,						XK_c,	   tagnext,	       {.i = -1} },
 	{ KeyPress, MODKEY|ShiftMask,				XK_e,	   quit,	       {0} }, };
 /* button definitions */ /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */ static Button buttons[] = { 
 	/* click                event mask      button          function        argument */ 
-	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} }, 
-	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
-	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
+	//{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
@@ -168,5 +146,5 @@ static Key keys[] = {
 	{ ClkTagBar,            0,              Button1,        view,           {0} },
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
-	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+	//{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };

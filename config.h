@@ -6,6 +6,7 @@
 #define XF86AudioMute 0x1008ff12
 #define XF86AudioRaiseVolume 0x1008ff13
 #define XF86Display 0x1008ff59
+#define XF86TouchpadToggle 0x1008ffa9
 
 /* appearance */
 static const unsigned int borderpx  = 0;        /* border pixel of windows */
@@ -88,7 +89,7 @@ static Key keys[] = {
 	{ KeyPress, MODKEY|ShiftMask, 			    XK_j, 	   spawn,          SHCMD("alacritty") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_k, 	   spawn,          SHCMD("terminal_lf") }, 
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_l, 	   spawn,          SHCMD("firefox") },
-	{ KeyPress, MODKEY|ShiftMask, 		        XK_odiaeresis, spawn,          SHCMD("Discord") },
+	{ KeyPress, MODKEY|ShiftMask, 		        XK_odiaeresis, spawn,          SHCMD("discord") },
 	{ KeyPress, MODKEY|ShiftMask, 		        XK_u, spawn,          SHCMD("steam") },
 	{ KeyPress, MODKEY|ALT, 				        XK_Return, spawn,          SHCMD("flameshot gui") },
 	{ KeyPress, MODKEY,		            XK_Return, spawn,          SHCMD("scrot ~/Pictures/screenshots/%Y-%m-%d-%T.png") },
@@ -102,6 +103,7 @@ static Key keys[] = {
 	{ KeyRelease, 0,								XF86MonBrightnessUp, spawn,		SHCMD("pkill -RTMIN+6 dwmblocks")},
 	{ KeyRelease, 0,								XF86MonBrightnessDown, spawn,		SHCMD("pkill -RTMIN+6 dwmblocks")},
 	{ KeyPress, 0,								XF86Display, spawn,		SHCMD("dmenu_screens")},
+	{ KeyPress, 0,								XF86TouchpadToggle, spawn,		SHCMD("touchpad_toggle")},
 	{ KeyPress, MODKEY, 				        XK_e, 	   spawn,          SHCMD("power_menu") },
 	{ KeyPress, 0,							XK_Caps_Lock,	   spawn,  SHCMD("pkill -RTMIN+5 dwmblocks")},
 	{ KeyRelease, 0,							XK_Caps_Lock,	   spawn,  SHCMD("pkill -RTMIN+5 dwmblocks")},
